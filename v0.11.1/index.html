@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>SolidCraft</title>
+  <meta name="description" content="Open-source parametric CAD built in Rust. Desktop, browser, and MCP for AI agents.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SolidCraft">
+  <meta property="og:title" content="SolidCraft: try it in your browser">
+  <meta property="og:description" content="Open-source parametric CAD built in Rust. Desktop, browser, and MCP for AI agents.">
+  <meta property="og:url" content="https://bherbruck.github.io/solidcraft/app/">
+  <meta property="og:image" content="https://bherbruck.github.io/solidcraft/og.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="SolidCraft: open-source parametric CAD built in Rust">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SolidCraft: try it in your browser">
+  <meta name="twitter:description" content="Open-source parametric CAD built in Rust. Desktop, browser, and MCP for AI agents.">
+  <meta name="twitter:image" content="https://bherbruck.github.io/solidcraft/og.png">
+  <meta name="twitter:image:alt" content="SolidCraft: open-source parametric CAD built in Rust">
+  
+<script type="module">
+import init, * as bindings from './solidcraft-web-6b4e1a486dac2d62.js';
+const wasm = await init({ module_or_path: './solidcraft-web-6b4e1a486dac2d62_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+  
+  
+  <link rel="stylesheet" href="./loading-e63241c70e2928c4.css" integrity="sha384-CWuyjDSPfUzmFqriX0uMiBCpgW1Qznx7zYh1Ploq6XZ1b+dW70Ce7mm90M22UGs9"/>
+<link rel="modulepreload" href="./solidcraft-web-6b4e1a486dac2d62.js" crossorigin="anonymous" integrity="sha384-tR+qiGA/g8anEZKATGwxeXk9ui5CSNxiMJA9G3r9jdDo7APg4dgv6j8uGfTnSLV/"><link rel="preload" href="./solidcraft-web-6b4e1a486dac2d62_bg.wasm" crossorigin="anonymous" integrity="sha384-5d8bbPHZg1uNqNogUSTaulsXN+EN8ImXABEbVUAdxrLBI5td2vn7HU7isx6CWbWJ" as="fetch" type="application/wasm"></head>
+<body>
+  <canvas id="solidcraft_canvas"></canvas>
+  <div id="solidcraft_loading">Loading SolidCraft&hellip;</div>
+  <script>
+    // Offline use and updates (sw.js; written into release builds by `cargo xtask web-offline`).
+    if ("serviceWorker" in navigator) {
+      addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
