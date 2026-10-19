@@ -1,0 +1,3 @@
+Built from tangency-labs/solidcraft at tag v0.1.1
+https://github.com/tangency-labs/solidcraft/tree/v0.1.1
+This release shipped no browser zip, so it was built from source with trunk build --release. 
