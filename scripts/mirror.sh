@@ -3,6 +3,7 @@
 # Mirrors every stable release that has a web zip, newest first, and stops when the next one would not fit under the
 # size cap (the oldest versions are the ones left out).
 # Env: UPSTREAM (owner/repo), NAME (app name, e.g. photocraft)
+#      LEGACY_NAME (optional: an earlier name that older release zips use)
 #      TAG (optional: mirror just this release), LIMIT (how many recent releases to look at, default 40),
 #      CAP_MB (published-site size cap, default 800)
 set -euo pipefail
@@ -25,8 +26,13 @@ fi
 for tag in $tags; do
   ver="${tag#v}"
   if [ -d "v$ver" ]; then continue; fi
-  asset="$NAME-web-$ver.zip"
-  zip_bytes=$(gh api "repos/$UPSTREAM/releases/tags/$tag" --jq ".assets[] | select(.name == \"$asset\") | .size" 2>/dev/null || true)
+  # A project renamed partway through its history can name older zips after its old name (LEGACY_NAME).
+  asset=""; zip_bytes=""
+  for n in "$NAME" ${LEGACY_NAME:-}; do
+    asset="$n-web-$ver.zip"
+    zip_bytes=$(gh api "repos/$UPSTREAM/releases/tags/$tag" --jq ".assets[] | select(.name == \"$asset\") | .size" 2>/dev/null || true)
+    [ -n "$zip_bytes" ] && break
+  done
   if [ -z "$zip_bytes" ]; then echo "No web zip on $tag, skipping"; continue; fi
   # Unpacked, a web build is about 2.4 times its zip. Stop once the next one would not fit.
   size=$(du -sm --exclude=.git . | cut -f1)

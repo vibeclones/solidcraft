@@ -29,6 +29,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UPSTREAM: tangency-labs/solidcraft
           NAME: solidcraft
+          LEGACY_NAME: solvecraft
           TAG: ${{ inputs.tag }}
           LIMIT: ${{ inputs.limit || '40' }}
         run: bash scripts/mirror.sh
