@@ -13,8 +13,10 @@
 // unchanged, the kept build starts; when a new build is deployed, it is downloaded first
 // (waiting at most UPDATE_TIMEOUT_MS; the download goes on in the background after that) and
 // started. When the site has no `build.json` (the app was removed), launches go to the network,
-// the kept build answering when that fails. Each page then gets its files from the build it
-// started (remembered in PAGES), never from another build with a file of the same name.
+// the kept build answering when that fails. So they do when `build.json` is redirected or
+// refused (a sign-in in front of the app): the browser then shows the sign-in. Each page then
+// gets its files from the build it started (remembered in PAGES), never from another build
+// with a file of the same name.
 //
 // A cache is only deleted when nothing uses it: a download holds its lock (Web Locks, shared,
 // in any tab or worker; the browser releases it when the download ends or its worker stops), and
@@ -26,7 +28,7 @@
 // Unbuilt (VERSION "dev", as debug builds get it), the worker retires: it drops what a release
 // build kept and unregisters, so `trunk serve` after `trunk serve --release --no-autoreload`
 // shows the development build. Deploying this file unbuilt switches the worker off for everyone.
-/* @build */ const VERSION = "0.12.0-9ec6d3c4a1e1ca0d", FILES = [{"file":"index.html","sha256":"85fed79bec056ec05f38f6a0a76e152d2c7466fca08d9adbef0236bb205945c8"},{"file":"loading-e63241c70e2928c4.css","sha256":"d3cfb9ced62a062f69c4a99db7eeb7f5a6306c69a64de7166db2c348c575496d"},{"file":"solidcraft-web-8130afd956138ad1.js","sha256":"9a6155a46be0922b9d680b6bf16f9a8dab8f67445fc61340610133205671fee6"},{"file":"solidcraft-web-8130afd956138ad1_bg.wasm","sha256":"6e90d8598eee72398da0f492a6d8912e4fb8b3b1f730722720101d20ec60532d"}];
+/* @build */ const VERSION = "0.22.0-6ef7a35f898166ea", FILES = [{"file":"icons/256x256/ai.storyteller.solidcraft.png","sha256":"71a3e492720571cf572faa51d86a7ff75e9d7dea0916142b51de835bf857c5af"},{"file":"icons/32x32/ai.storyteller.solidcraft.png","sha256":"894552719c6bf8aa91f9d3ab3f1cb61836708f9ba00daf0324175ac82f16dfab"},{"file":"icons/512x512/ai.storyteller.solidcraft.png","sha256":"84fde8ef270f5b32afa2d661749b4778a205e7df980dd67795c10f7f4a69e15d"},{"file":"index.html","sha256":"73d8b835a96eb119973be9cc0d50f485030106d181ed71b46cb46729800690ca"},{"file":"loading-fa23566dd89fa92b.css","sha256":"6beeebe803106340480ebee6554cf7c1c33a2ce0410bcb42d7fd4f78e3dee7f2"},{"file":"loading-logo.svg","sha256":"31d87162bb6a5a189bf60575981a1ef24c245d209783d9ad08b8318f66146e3d"},{"file":"manifest.webmanifest","sha256":"5e7f98b21b14062b83141e3d751a1e8fe5d85eb9a0496e464c1ed1cb5029aef1"},{"file":"solidcraft-web-f8b040792e49e51f.js","sha256":"61c67d18a1fecab192f28b6fe2408d32ec67de76b3ffe04e14e6c77f2e599f05"},{"file":"solidcraft-web-f8b040792e49e51f_bg.wasm","sha256":"3babfc3a7e2fcaaf8d251713de995a3a7410fce1c312c37c726911ff1fb2d9a6"}];
 const RETIRE = VERSION === "dev";
 
 const PATH = new URL(self.registration.scope).pathname;
@@ -158,9 +160,14 @@ function within(ms, promise) {
 /** No app is deployed here any more (the server says `build.json` doesn't exist). */
 const GONE = "gone";
 
-/** The deployed build's version and files, GONE, or null (unknown: offline, failing, invalid). */
+/** The site wants a sign-in first (`build.json` is redirected, often to another origin, or refused). */
+const SIGN_IN = "sign-in";
+
+/** The deployed build's version and files, GONE, SIGN_IN, or null (unknown: offline, failing, invalid). */
 async function deployed() {
-  const response = await fetch(url("build.json"), { cache: "no-cache" });
+  // `manual`: a redirect to another origin would only fail (CORS), looking like being offline.
+  const response = await fetch(url("build.json"), { cache: "no-cache", redirect: "manual" });
+  if (response.type === "opaqueredirect" || response.status === 401 || response.status === 403) return SIGN_IN;
   if (response.status === 404 || response.status === 410) return GONE;
   const build = response.ok ? await response.json() : null;
   const valid = build && typeof build.version === "string" && Array.isArray(build.files);
@@ -182,6 +189,7 @@ async function launch(event) {
   if (!kept) return [await fetch(event.request), NETWORK]; // Nothing kept yet (the first visit).
   extend(event, sweep());
   const build = await within(NAVIGATE_TIMEOUT_MS, deployed());
+  if (build === SIGN_IN) return [await fetch(event.request), NETWORK];
   if (build === GONE) {
     const page = await fetch(event.request).catch(() => null);
     return page && page.ok ? [page, NETWORK] : [kept, CACHE];
