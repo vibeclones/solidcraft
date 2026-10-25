@@ -13,8 +13,10 @@
 // unchanged, the kept build starts; when a new build is deployed, it is downloaded first
 // (waiting at most UPDATE_TIMEOUT_MS; the download goes on in the background after that) and
 // started. When the site has no `build.json` (the app was removed), launches go to the network,
-// the kept build answering when that fails. Each page then gets its files from the build it
-// started (remembered in PAGES), never from another build with a file of the same name.
+// the kept build answering when that fails. So they do when `build.json` is redirected or
+// refused (a sign-in in front of the app): the browser then shows the sign-in. Each page then
+// gets its files from the build it started (remembered in PAGES), never from another build
+// with a file of the same name.
 //
 // A cache is only deleted when nothing uses it: a download holds its lock (Web Locks, shared,
 // in any tab or worker; the browser releases it when the download ends or its worker stops), and
@@ -26,7 +28,7 @@
 // Unbuilt (VERSION "dev", as debug builds get it), the worker retires: it drops what a release
 // build kept and unregisters, so `trunk serve` after `trunk serve --release --no-autoreload`
 // shows the development build. Deploying this file unbuilt switches the worker off for everyone.
-/* @build */ const VERSION = "0.13.1-ca4b9c1c08e69923", FILES = [{"file":"icons/256x256/ai.storyteller.solidcraft.png","sha256":"b8c7cdbafd1d3d26cbffb139d4bbe77e9b2c3a83e2ba2581f64d3576d83f93dc"},{"file":"icons/32x32/ai.storyteller.solidcraft.png","sha256":"6e67969e52a23a9792ce0e96ec08058571b3633e15f17c4b3a9a8d195e07581f"},{"file":"icons/512x512/ai.storyteller.solidcraft.png","sha256":"1bff946f69b4bfd31edc676ededf059bbe70dc33475629123e19ac4c53a0b765"},{"file":"index.html","sha256":"310dca779550a5c71db3e41a0a49f760dd7281016de39700cb0008739bb10699"},{"file":"loading-e63241c70e2928c4.css","sha256":"d3cfb9ced62a062f69c4a99db7eeb7f5a6306c69a64de7166db2c348c575496d"},{"file":"manifest.webmanifest","sha256":"5e7f98b21b14062b83141e3d751a1e8fe5d85eb9a0496e464c1ed1cb5029aef1"},{"file":"solidcraft-web-92a66699f2892a9b.js","sha256":"e7be0d02253000dbaf42d4f0a6ccb9d7597a1e2eef1c5cb3342826b1907ccefe"},{"file":"solidcraft-web-92a66699f2892a9b_bg.wasm","sha256":"20029bd4621dbd23de1b1ff08032fc0b60cfd1add29fe24bf1b68c1a8114d0da"}];
+/* @build */ const VERSION = "0.22.1-f6b1b51a7abe8914", FILES = [{"file":"icons/256x256/ai.storyteller.solidcraft.png","sha256":"71a3e492720571cf572faa51d86a7ff75e9d7dea0916142b51de835bf857c5af"},{"file":"icons/32x32/ai.storyteller.solidcraft.png","sha256":"894552719c6bf8aa91f9d3ab3f1cb61836708f9ba00daf0324175ac82f16dfab"},{"file":"icons/512x512/ai.storyteller.solidcraft.png","sha256":"84fde8ef270f5b32afa2d661749b4778a205e7df980dd67795c10f7f4a69e15d"},{"file":"index.html","sha256":"63ef3b97d561e3ee7d49c3006152b8536a385cb7d3dfc55806c2eb12d0f05157"},{"file":"loading-fa23566dd89fa92b.css","sha256":"6beeebe803106340480ebee6554cf7c1c33a2ce0410bcb42d7fd4f78e3dee7f2"},{"file":"loading-logo.svg","sha256":"31d87162bb6a5a189bf60575981a1ef24c245d209783d9ad08b8318f66146e3d"},{"file":"manifest.webmanifest","sha256":"5e7f98b21b14062b83141e3d751a1e8fe5d85eb9a0496e464c1ed1cb5029aef1"},{"file":"solidcraft-web-93f4174164bacb68.js","sha256":"2bf0072f8e1779c2e820b8e423a3b546b6a64e407a1a5fa5cc51befb33a3aa87"},{"file":"solidcraft-web-93f4174164bacb68_bg.wasm","sha256":"b0ee6d3292c207b91afd586eb2c4bcae67cf489f53e15619e95d7ec7d6aef69a"}];
 const RETIRE = VERSION === "dev";
 
 const PATH = new URL(self.registration.scope).pathname;
@@ -158,9 +160,14 @@ function within(ms, promise) {
 /** No app is deployed here any more (the server says `build.json` doesn't exist). */
 const GONE = "gone";
 
-/** The deployed build's version and files, GONE, or null (unknown: offline, failing, invalid). */
+/** The site wants a sign-in first (`build.json` is redirected, often to another origin, or refused). */
+const SIGN_IN = "sign-in";
+
+/** The deployed build's version and files, GONE, SIGN_IN, or null (unknown: offline, failing, invalid). */
 async function deployed() {
-  const response = await fetch(url("build.json"), { cache: "no-cache" });
+  // `manual`: a redirect to another origin would only fail (CORS), looking like being offline.
+  const response = await fetch(url("build.json"), { cache: "no-cache", redirect: "manual" });
+  if (response.type === "opaqueredirect" || response.status === 401 || response.status === 403) return SIGN_IN;
   if (response.status === 404 || response.status === 410) return GONE;
   const build = response.ok ? await response.json() : null;
   const valid = build && typeof build.version === "string" && Array.isArray(build.files);
@@ -182,6 +189,7 @@ async function launch(event) {
   if (!kept) return [await fetch(event.request), NETWORK]; // Nothing kept yet (the first visit).
   extend(event, sweep());
   const build = await within(NAVIGATE_TIMEOUT_MS, deployed());
+  if (build === SIGN_IN) return [await fetch(event.request), NETWORK];
   if (build === GONE) {
     const page = await fetch(event.request).catch(() => null);
     return page && page.ok ? [page, NETWORK] : [kept, CACHE];
