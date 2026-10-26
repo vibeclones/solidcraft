@@ -21,8 +21,8 @@
   <meta name="twitter:image:alt" content="SolidCraft: open-source parametric CAD built in Rust">
   
 <script type="module">
-import init, * as bindings from './solidcraft-web-a19388c80df234be.js';
-const wasm = await init({ module_or_path: './solidcraft-web-a19388c80df234be_bg.wasm' });
+import init, * as bindings from './solidcraft-web-de8757aff4f35cfb.js';
+const wasm = await init({ module_or_path: './solidcraft-web-de8757aff4f35cfb_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -44,7 +44,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
   
   
   
-<link rel="modulepreload" href="./solidcraft-web-a19388c80df234be.js" crossorigin="anonymous" integrity="sha384-OtnAYr8dIG/lNY1v6srtG9UjileNVawApBUvjTLdAmXy6RqyKfSxezq345kJoxnW"><link rel="preload" href="./solidcraft-web-a19388c80df234be_bg.wasm" crossorigin="anonymous" integrity="sha384-NasFfu8Nlv3qswmLIKWikfLXKH0brYuyllloSG6D9BTgFwqVcEeSVf2QEBN8Qcjp" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./solidcraft-web-de8757aff4f35cfb.js" crossorigin="anonymous" integrity="sha384-SVbTCTndaLTzB7jXF0tMem4KFVrey1BC/5KuSG12g9BRFAcqrgkIMM3yV0A28ld4"><link rel="preload" href="./solidcraft-web-de8757aff4f35cfb_bg.wasm" crossorigin="anonymous" integrity="sha384-6zh1UBVPcYm4QMTpbssJncssjYpQKBRBudpfDj4170ereJk24xj5LXSjq2qcmLcy" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="solidcraft_canvas"></canvas>
   <div id="solidcraft_loading" role="status"><img src="loading-logo.svg" alt=""><span class="sr-only">Loading SolidCraft&hellip;</span></div>
