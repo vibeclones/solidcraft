@@ -21,8 +21,8 @@
   <meta name="twitter:image:alt" content="SolidCraft: open-source parametric CAD built in Rust">
   
 <script type="module">
-import init, * as bindings from './solidcraft-web-f8b040792e49e51f.js';
-const wasm = await init({ module_or_path: './solidcraft-web-f8b040792e49e51f_bg.wasm' });
+import init, * as bindings from './solidcraft-web-3eafe95362962b39.js';
+const wasm = await init({ module_or_path: './solidcraft-web-3eafe95362962b39_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -38,13 +38,13 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
   <!-- Installable as an app (manifest.webmanifest); the icons are the Linux exports of the app mark. -->
   <meta name="theme-color" content="#343840">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/32x32/ai.storyteller.solidcraft.png">
-  <link rel="apple-touch-icon" href="icons/256x256/ai.storyteller.solidcraft.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/32x32/io.tangencylabs.solidcraft.png">
+  <link rel="apple-touch-icon" href="icons/256x256/io.tangencylabs.solidcraft.png">
   
   
   
   
-<link rel="modulepreload" href="./solidcraft-web-f8b040792e49e51f.js" crossorigin="anonymous" integrity="sha384-KxLEjgqn07ghExE2+zm5bEf3OJ+8MOV5I80tK6w42ilzcR3BarTtSkC0KtEkaiEJ"><link rel="preload" href="./solidcraft-web-f8b040792e49e51f_bg.wasm" crossorigin="anonymous" integrity="sha384-4VHuNsNlcwdxi35QRNwv3MTvPmVGJZeXuOT4F8OfOh3yqs30mDamWEnpivn0VTt8" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./solidcraft-web-3eafe95362962b39.js" crossorigin="anonymous" integrity="sha384-ChZm5AFAiuqTtDoT61lCCrOJAABSkZs0xy/h1tIVZRFbbg6i/r1Mf9U8cfMqTTTI"><link rel="preload" href="./solidcraft-web-3eafe95362962b39_bg.wasm" crossorigin="anonymous" integrity="sha384-lpSzMzryTtLKCGGfBhTp8Lxj6hhrWeKG1hS5mwyoPvugL66JDBESkTtotdfWRf0b" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="solidcraft_canvas"></canvas>
   <div id="solidcraft_loading" role="status"><img src="loading-logo.svg" alt=""><span class="sr-only">Loading SolidCraft&hellip;</span></div>
